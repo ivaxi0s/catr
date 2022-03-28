@@ -6,7 +6,7 @@ import sys
 import tqdm
 
 from models import utils
-
+import pdb
 
 def train_one_epoch(model, criterion, data_loader,
                     optimizer, device, epoch, max_norm):
@@ -17,12 +17,14 @@ def train_one_epoch(model, criterion, data_loader,
     total = len(data_loader)
 
     with tqdm.tqdm(total=total) as pbar:
-        for images, masks, caps, cap_masks in data_loader:
-            samples = utils.NestedTensor(images, masks).to(device)
+        for images, caps in data_loader:
+            # samples = utils.NestedTensor(images, masks).to(device)
+            samples = images
+            pdb.set_trace()
             caps = caps.to(device)
-            cap_masks = cap_masks.to(device)
+            # cap_masks = cap_masks.to(device)
 
-            outputs = model(samples, caps[:, :-1], cap_masks[:, :-1])
+            outputs = model(samples, caps[:, :-1])
             loss = criterion(outputs.permute(0, 2, 1), caps[:, 1:])
             loss_value = loss.item()
             epoch_loss += loss_value

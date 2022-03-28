@@ -10,6 +10,23 @@ from models import utils, caption
 from datasets import coco
 from configuration import Config
 from engine import train_one_epoch, evaluate
+import pdb
+import torchvision.datasets as dset
+from torchvision import io, transforms
+
+MEAN = (0.485, 0.456, 0.406)
+STD = (0.229, 0.224, 0.225)
+
+TRAIN_PCT = 0.95
+NUM_WORKERS = 2
+BATCH_SIZE = 8
+EPOCHS = 3
+LR = 1e-4
+IMAGE_SIZE = (224, 224)
+
+MAX_TEXT_LENGTH = 32
+
+LABEL_MASK = -100
 
 
 def main(config):
@@ -39,8 +56,35 @@ def main(config):
         param_dicts, lr=config.lr, weight_decay=config.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, config.lr_drop)
 
-    dataset_train = coco.build_dataset(config, mode='training')
-    dataset_val = coco.build_dataset(config, mode='validation')
+
+
+    tfms = transforms.Compose(
+        [
+            transforms.Resize(IMAGE_SIZE), 
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=0.5, 
+                std=0.5
+            )
+    ]
+    )
+    descale = transforms.Compose(
+        [
+            transforms.Normalize(
+                mean = [ 0., 0., 0. ],
+                std = 1 / 0.5
+            ),
+            transforms.Normalize(
+                mean = -0.5,
+                std = [ 1., 1., 1. ]
+            ),                           
+        ]
+    )
+
+    target_tfm = lambda x: random.choice(x)
+
+    dataset_train = dset.CocoCaptions("/home/ivsh/scratch/datasets/cococaption/train2017/", "/home/ivsh/scratch/datasets/cococaption/annotations/captions_train2017.json", tfms)
+    dataset_val = dset.CocoCaptions("/home/ivsh/scratch/datasets/cococaption/val2017/", "/home/ivsh/scratch/datasets/cococaption/annotations/captions_val2017.json", tfms)
     print(f"Train: {len(dataset_train)}")
     print(f"Valid: {len(dataset_val)}")
 

@@ -39,5 +39,5 @@ class Config(object):
         self.pre_norm = True
 
         # Dataset
-        self.dir = '../coco'
+        self.dir = '/home/ivsh/scratch/datasets/cococaption'
         self.limit = -1
